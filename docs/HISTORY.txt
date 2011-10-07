@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0dev (unreleased)
+1.1.2
 -------------------
 
-- Initial release
+- Add preprocessing to remove the &amp;amp; strings

@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 import csv
 import decimal
+from cStringIO import StringIO
+
 from banking.statements.plugin import CSVReaderPlugin
 from banking.statements.config import FIELDS
 from banking.statements.util import logger, ColumnMismatchError
@@ -22,7 +24,7 @@ class OPDialect(csv.Dialect):
 # circa 2004
 MAPPING_V1 = {
    "date":'Tap.pv', "amount":u'Määrä\xa0EUROA' ,"description":"Selitys",
-   "account": "Saajan tilinumero",
+   "account": "Saajan tilinumero", "payee/recipient": "Saaja/Maksaja",
    "reference":"Viite", "message":"Viesti"
 }
 
@@ -30,7 +32,8 @@ MAPPING_V1 = {
 MAPPING_V2 = {
    "date":u'Arvopäivä', "amount":u'Määrä\xa0EUROA',
    "description":u"Selitys", "account": u"Saajan tilinumero ja pankin BIC",
-   "reference":u"Viite", "message":u"Viesti"
+   "reference":u"Viite", "message":u"Viesti",
+   "payee/recipient": u"Saaja/Maksaja"
 }
 
 
@@ -41,7 +44,13 @@ class OPReaderPlugin(CSVReaderPlugin):
    ENCODING = "1252"
 
    def __init__(self, linestream, dialect=OPDialect(), debug=False):
-      CSVReaderPlugin.__init__(self, linestream, debug=debug, dialect=dialect)
+
+      fixedstream = StringIO()
+      for line in linestream:
+         fixedstream.write(self.preprocess(line))
+      fixedstream.seek(0)
+
+      CSVReaderPlugin.__init__(self, fixedstream, debug=debug, dialect=dialect)
 
       for mapping in [MAPPING_V1, MAPPING_V2]:
          mappedcolumns = [mapping[commonfield] for commonfield in FIELDS]
@@ -53,10 +62,11 @@ class OPReaderPlugin(CSVReaderPlugin):
       if not self._mapping:
          raise Exception("plugin cannot handle rows: \n\n%s\n" % str(self.fieldnames))
 
+   def preprocess(self,row):
+      return row.replace("&amp;amp;", "&")
 
    def format_record(self, row):
       data = [row[colname] for colname in self._columns]
       data[1] = decimal.Decimal(data[1].replace(',','.'))
       return tuple(data)
-
 
