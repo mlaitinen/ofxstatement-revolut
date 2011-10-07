@@ -48,6 +48,7 @@ class OPReaderPlugin(CSVReaderPlugin):
       fixedstream = StringIO()
       for line in linestream:
          fixedstream.write(self.preprocess(line))
+      linestream.close()
       fixedstream.seek(0)
 
       CSVReaderPlugin.__init__(self, fixedstream, debug=debug, dialect=dialect)
