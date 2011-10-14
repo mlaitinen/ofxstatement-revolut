@@ -28,8 +28,15 @@ MAPPING_V1 = {
    "reference":"Viite", "message":"Viesti"
 }
 
-# until at least 2011
+# in between, before BIC
 MAPPING_V2 = {
+   "date":u'Arvopäivä', "amount":u'Määrä\xa0EUROA',
+   "description":u"Selitys", "account": u"Saajan tilinumero",
+   "reference":u"Viite", "message":u"Viesti",
+   "payee/recipient": u"Saaja/Maksaja"
+}
+# until at least 2011
+MAPPING_V3 = {
    "date":u'Arvopäivä', "amount":u'Määrä\xa0EUROA',
    "description":u"Selitys", "account": u"Saajan tilinumero ja pankin BIC",
    "reference":u"Viite", "message":u"Viesti",
@@ -53,14 +60,14 @@ class OPReaderPlugin(CSVReaderPlugin):
 
       CSVReaderPlugin.__init__(self, fixedstream, debug=debug, dialect=dialect)
 
-      for mapping in [MAPPING_V1, MAPPING_V2]:
+      for mapping in [MAPPING_V1, MAPPING_V2, MAPPING_V3]:
          mappedcolumns = [mapping[commonfield] for commonfield in FIELDS]
          logger.debug("trying: %s" % mappedcolumns)
          if set(mappedcolumns).issubset(set(self.fieldnames)):
             self._mapping = mapping
             self._columns = [col.encode(self.ENCODING) for col in mappedcolumns]
 
-      if not self._mapping:
+      if not getattr(self, "_mapping", None):
          raise Exception("plugin cannot handle rows: \n\n%s\n" % str(self.fieldnames))
 
    def preprocess(self,row):

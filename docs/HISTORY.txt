@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.2
+---
+
+- fix broken multiple format mechanism
+- add new format that was in use before BIC
+
+
 1.1.2
 -------------------
 
