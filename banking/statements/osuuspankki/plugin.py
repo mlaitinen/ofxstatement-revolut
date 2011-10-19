@@ -66,12 +66,16 @@ class OPReaderPlugin(CSVReaderPlugin):
          if set(mappedcolumns).issubset(set(self.fieldnames)):
             self._mapping = mapping
             self._columns = [col.encode(self.ENCODING) for col in mappedcolumns]
-
-      if not getattr(self, "_mapping", None):
+            break
+      else:
          raise Exception("plugin cannot handle rows: \n\n%s\n" % str(self.fieldnames))
 
    def preprocess(self,row):
       return row.replace("&amp;amp;", "&")
+
+   def can_parse(self, stream):
+      "return True if this plugin can parse the stream"
+      raise NotImplementedError
 
    def format_record(self, row):
       data = [row[colname] for colname in self._columns]
