@@ -62,13 +62,13 @@ class OPReaderPlugin(CSVReaderPlugin):
 
       for mapping in [MAPPING_V1, MAPPING_V2, MAPPING_V3]:
          mappedcolumns = [mapping[commonfield] for commonfield in FIELDS]
-         logger.debug("trying: %s" % mappedcolumns)
          if set(mappedcolumns).issubset(set(self.fieldnames)):
             self._mapping = mapping
             self._columns = [col.encode(self.ENCODING) for col in mappedcolumns]
+            logger.debug("format ok: %s" % mappedcolumns)
             break
       else:
-         raise Exception("plugin cannot handle rows: \n\n%s\n" % str(self.fieldnames))
+         raise Exception("bad format: %s" % str(self.fieldnames))
 
    def preprocess(self,row):
       return row.replace("&amp;amp;", "&")
