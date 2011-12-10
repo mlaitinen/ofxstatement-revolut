@@ -4,8 +4,9 @@ import decimal
 from cStringIO import StringIO
 
 from banking.statements.plugin import CSVReaderPlugin
-from banking.statements.config import FIELDS
 from banking.statements.util import logger, ColumnMismatchError
+
+from banking.statements import AccountEntryRecord as Record
 
 
 # csv format, from circa 2004
@@ -61,7 +62,7 @@ class OPReaderPlugin(CSVReaderPlugin):
       CSVReaderPlugin.__init__(self, fixedstream, debug=debug, dialect=dialect)
 
       for mapping in [MAPPING_V1, MAPPING_V2, MAPPING_V3]:
-         mappedcolumns = [mapping[commonfield] for commonfield in FIELDS]
+         mappedcolumns = [mapping[commonfield] for commonfield in Record._fields]
          if set(mappedcolumns).issubset(set(self.fieldnames)):
             self._mapping = mapping
             self._columns = [col.encode(self.ENCODING) for col in mappedcolumns]
@@ -80,5 +81,5 @@ class OPReaderPlugin(CSVReaderPlugin):
    def format_record(self, row):
       data = [row[colname] for colname in self._columns]
       data[1] = decimal.Decimal(data[1].replace(',','.'))
-      return tuple(data)
+      return Record._make(data)
 
