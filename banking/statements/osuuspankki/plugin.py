@@ -25,7 +25,7 @@ class OPDialect(csv.Dialect):
 # circa 2004
 MAPPING_V1 = {
    "date":'Tap.pv', "amount":u'Määrä\xa0EUROA' ,"description":"Selitys",
-   "account": "Saajan tilinumero", "payee/recipient": "Saaja/Maksaja",
+   "account": "Saajan tilinumero", "payee_or_recipient": "Saaja/Maksaja",
    "reference":"Viite", "message":"Viesti"
 }
 
@@ -34,14 +34,14 @@ MAPPING_V2 = {
    "date":u'Arvopäivä', "amount":u'Määrä\xa0EUROA',
    "description":u"Selitys", "account": u"Saajan tilinumero",
    "reference":u"Viite", "message":u"Viesti",
-   "payee/recipient": u"Saaja/Maksaja"
+   "payee_or_recipient": u"Saaja/Maksaja"
 }
 # until at least 2011
 MAPPING_V3 = {
    "date":u'Arvopäivä', "amount":u'Määrä\xa0EUROA',
    "description":u"Selitys", "account": u"Saajan tilinumero ja pankin BIC",
    "reference":u"Viite", "message":u"Viesti",
-   "payee/recipient": u"Saaja/Maksaja"
+   "payee_or_recipient": u"Saaja/Maksaja"
 }
 
 
