@@ -22,23 +22,32 @@ class OPDialect(csv.Dialect):
    skipinitialspace = None
 
 
-# circa 2004
+# personal, circa 2004
 MAPPING_V1 = {
    "date":'Tap.pv', "amount":u'Määrä\xa0EUROA' ,"description":"Selitys",
    "account": "Saajan tilinumero", "payee_or_recipient": "Saaja/Maksaja",
    "reference":"Viite", "message":"Viesti"
 }
 
-# in between, before BIC
+# personal, in between, before BIC
 MAPPING_V2 = {
    "date":u'Arvopäivä', "amount":u'Määrä\xa0EUROA',
    "description":u"Selitys", "account": u"Saajan tilinumero",
    "reference":u"Viite", "message":u"Viesti",
    "payee_or_recipient": u"Saaja/Maksaja"
 }
-# until at least 2011
+
+# personal, until at least 2011
 MAPPING_V3 = {
    "date":u'Arvopäivä', "amount":u'Määrä\xa0EUROA',
+   "description":u"Selitys", "account": u"Saajan tilinumero ja pankin BIC",
+   "reference":u"Viite", "message":u"Viesti",
+   "payee_or_recipient": u"Saaja/Maksaja"
+}
+
+# corporate, from 2013 on
+MAPPING_V4 = {
+   "date":u'Arvop\xe4iv\xe4', "amount":u'M\xe4\xe4r\xe4 EUROA',
    "description":u"Selitys", "account": u"Saajan tilinumero ja pankin BIC",
    "reference":u"Viite", "message":u"Viesti",
    "payee_or_recipient": u"Saaja/Maksaja"
@@ -61,7 +70,7 @@ class OPReaderPlugin(CSVReaderPlugin):
 
       CSVReaderPlugin.__init__(self, fixedstream, debug=debug, dialect=dialect)
 
-      for mapping in [MAPPING_V1, MAPPING_V2, MAPPING_V3]:
+      for mapping in [MAPPING_V1, MAPPING_V2, MAPPING_V3, MAPPING_V4]:
          mappedcolumns = [mapping[commonfield] for commonfield in Record._fields]
          if set(mappedcolumns).issubset(set(self.fieldnames)):
             self._mapping = mapping
