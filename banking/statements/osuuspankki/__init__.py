@@ -1,1 +1,1 @@
-from plugin import OPReaderPlugin
+from .plugin import OPReaderPlugin
