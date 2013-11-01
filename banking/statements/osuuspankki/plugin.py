@@ -45,8 +45,16 @@ MAPPING_V3 = {
    "payee_or_recipient": u"Saaja/Maksaja"
 }
 
-# corporate, from 2013 on
+# personal, 2013
 MAPPING_V4 = {
+   "date":u'Arvop\xe4iv\xe4', "amount":u'M\xe4\xe4r\xe4\xa0 EUROA',
+   "description":u"Selitys", "account": u"Saajan tilinumero ja pankin BIC",
+   "reference":u"Viite", "message":u"Viesti",
+   "payee_or_recipient": u"Saaja/Maksaja"
+}
+
+# corporate, from 2013 on
+MAPPING_V5 = {
    "date":u'Arvop\xe4iv\xe4', "amount":u'M\xe4\xe4r\xe4 EUROA',
    "description":u"Selitys", "account": u"Saajan tilinumero ja pankin BIC",
    "reference":u"Viite", "message":u"Viesti",
@@ -70,7 +78,7 @@ class OPReaderPlugin(CSVReaderPlugin):
 
       CSVReaderPlugin.__init__(self, fixedstream, debug=debug, dialect=dialect)
 
-      for mapping in [MAPPING_V1, MAPPING_V2, MAPPING_V3, MAPPING_V4]:
+      for mapping in [MAPPING_V1, MAPPING_V2, MAPPING_V3, MAPPING_V4, MAPPING_V5]:
          mappedcolumns = [mapping[commonfield] for commonfield in Record._fields]
          if set(mappedcolumns).issubset(set(self.fieldnames)):
             self._mapping = mapping
