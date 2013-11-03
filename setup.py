@@ -24,12 +24,12 @@ setup(name='banking.statements.osuuspankki',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          'banking.statements',
+          'ofxstatement'
           # -*- Extra requirements: -*-
       ],
       entry_points="""
-          [banking.statements.readerplugin]
-          osuuspankki = banking.statements.osuuspankki:OPReaderPlugin
+          [ofxstatement]
+          op = banking.statements.osuuspankki.plugin:OPPlugin
       """
       # -*- Entry points: -*-
       )
