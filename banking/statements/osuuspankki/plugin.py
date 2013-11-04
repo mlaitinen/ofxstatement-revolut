@@ -8,8 +8,6 @@ from io import StringIO
 from ofxstatement.plugin import Plugin, PluginNotRegistered
 from .parser import OPCsvStatementParser
 
-from . import PARSERS
-
 class OPPlugin(Plugin):
     "Suomen Osuuspankki / Finnish Osuuspankki"
 
@@ -17,14 +15,12 @@ class OPPlugin(Plugin):
         f = open(fin, "r", encoding='iso-8859-1')
         signature = f.readline().strip()
         f.seek(0)
-        for p in PARSERS:
-            m = import_module(p, __name__[:-7])
-            if signature == m.SIGNATURE:
-                parser = m.OPCsvStatementParser(f)
-                parser.statement.account_id = self.settings['account']
-                parser.statement.currency = self.settings['currency']
-                parser.statement.bank_id = self.settings.get('bank', 'Osuuspankki')
-                return parser
+        if signature in m.SIGNATURES:
+            parser = OPCsvStatementParser(f)
+            parser.statement.account_id = self.settings['account']
+            parser.statement.currency = self.settings['currency']
+            parser.statement.bank_id = self.settings.get('bank', 'Osuuspankki')
+            return parser
 
         # no plugin with matching signature was found
         raise Exception("No suitable Osuuspankki parser found for this statement file.")
