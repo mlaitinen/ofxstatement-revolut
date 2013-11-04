@@ -6,7 +6,7 @@ from importlib import import_module
 from io import StringIO
 
 from ofxstatement.plugin import Plugin, PluginNotRegistered
-from .parser import OPCsvStatementParser
+from .parser import OPCsvStatementParser, SIGNATURES
 
 class OPPlugin(Plugin):
     "Suomen Osuuspankki / Finnish Osuuspankki"
@@ -15,7 +15,7 @@ class OPPlugin(Plugin):
         f = open(fin, "r", encoding='iso-8859-1')
         signature = f.readline().strip()
         f.seek(0)
-        if signature in m.SIGNATURES:
+        if signature in SIGNATURES:
             parser = OPCsvStatementParser(f)
             parser.statement.account_id = self.settings['account']
             parser.statement.currency = self.settings['currency']
