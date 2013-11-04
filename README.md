@@ -1,4 +1,8 @@
 banking.statements.osuuspankki
 ==============================
 
-Plugin for ofxstatement to read CSV files exported from the online banking service of the Finnish Osuuspankki bank.
+This is a plugin for use with ofxstatement package. It implements
+parsers for different statement entry CSV formats that have been
+used by Osuuspankki of Finland.
+
+There is support for both personal and corporate CSV export formats.
