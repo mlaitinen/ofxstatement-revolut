@@ -5,18 +5,23 @@ version = '1.3.2'
 
 setup(name='banking.statements.osuuspankki',
       version=version,
-      description="banking.statements plugin for Osuuspankki of Finland",
+      description="Account statement reader plugin for Osuuspankki of Finland",
       long_description=open("README.md").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
-      # Get more strings from
-      # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Programming Language :: Python",
+        'Development Status :: 3 - Alpha',
+        'Programming Language :: Python :: 3',
+        'Natural Language :: English',
+        'Topic :: Office/Business :: Financial :: Accounting',
+        'Topic :: Utilities',
+        'Environment :: Console',
+        'Operating System :: OS Independent',
         ],
-      keywords='',
+      keywords=['ofxstatement','ofx'],
       author='Petri Savolainen',
       author_email='petri.savolainen@koodaamo.fi',
-      url='http://www.koodaamo.fi',
+      url='https://github.com/koodaamo/banking.statements.osuuspankki',
       license='GPLv2',
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['banking', 'banking.statements'],
@@ -25,11 +30,9 @@ setup(name='banking.statements.osuuspankki',
       install_requires=[
           'setuptools',
           'ofxstatement'
-          # -*- Extra requirements: -*-
       ],
       entry_points="""
           [ofxstatement]
           op = banking.statements.osuuspankki.plugin:OPPlugin
       """
-      # -*- Entry points: -*-
       )
