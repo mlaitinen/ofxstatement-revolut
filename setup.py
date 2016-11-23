@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.3.2'
+version = '1.3.3rc0'
 
 setup(name='banking.statements.osuuspankki',
       version=version,
@@ -23,8 +23,8 @@ setup(name='banking.statements.osuuspankki',
       author_email='petri.savolainen@koodaamo.fi',
       url='https://github.com/koodaamo/banking.statements.osuuspankki',
       license='GPLv2',
-      packages=find_packages(exclude=['ez_setup']),
-      namespace_packages=['banking', 'banking.statements'],
+      namespace_packages = ['banking', 'banking.statements'],
+      packages = ['banking.statements.osuuspankki'],
       include_package_data=True,
       zip_safe=False,
       install_requires=[
