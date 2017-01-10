@@ -17,6 +17,7 @@ TRANSACTION_TYPES = {
    "VUOKRA": "PAYMENT",
    "VERONPALAUTUS": "DIRECTDEP",
    "PALKKA": "DIRECTDEP",
+   "ARVOPAPERI": "OTHER"
 }
 
 #   Other types available: 'CREDIT', 'DEBIT', 'INT', 'DIV', 'FEE', 'DEP',
