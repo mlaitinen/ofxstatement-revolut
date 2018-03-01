@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.3.3rc0'
+version = '1.3.3'
 
 setup(name='banking.statements.osuuspankki',
       version=version,
@@ -10,7 +10,7 @@ setup(name='banking.statements.osuuspankki',
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
         "Programming Language :: Python",
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Programming Language :: Python :: 3',
         'Natural Language :: English',
         'Topic :: Office/Business :: Financial :: Accounting',
@@ -22,7 +22,7 @@ setup(name='banking.statements.osuuspankki',
       author='Petri Savolainen',
       author_email='petri.savolainen@koodaamo.fi',
       url='https://github.com/koodaamo/banking.statements.osuuspankki',
-      license='GPLv2',
+      license='GPLv3',
       namespace_packages = ['banking', 'banking.statements'],
       packages = ['banking.statements.osuuspankki'],
       include_package_data=True,
