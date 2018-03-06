@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.3.4 (unreleased)
+-------------------
+
+- add support for transaction type 'LUOTON MAKSU'
+
 1.3.3
 -----
 
