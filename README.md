@@ -1,10 +1,13 @@
-banking.statements.osuuspankki
-==============================
+ofxstatement-revolut
+====================
 
 This is a plugin for use with ofxstatement package. It implements
-parsers for different statement entry CSV formats that have been
-used by Osuuspankki of Finland.
+a parser for the Revolut CSV-formatted bank statement.
 
-There is support for both personal and corporate CSV export formats.
+The CSV isn't very machine readable, so we need to do some ugly string
+parsing to figure out the different field values.
 
 Issue reports and pull requests welcome.
+
+This module is based on the Osuuspankki ofxstatement parser found at
+https://github.com/koodaamo/banking.statements.osuuspankki
