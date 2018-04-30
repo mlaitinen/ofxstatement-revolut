@@ -4,8 +4,10 @@ from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
 from ofxstatement.statement import StatementLine, BankAccount
 
-SIGNATURE = "Completed Date ; Reference ; Paid Out (EUR) ; Paid In (EUR) ; " \
-            "Exchange Out; Exchange In; Balance (EUR); Category"
+SIGNATURES = [
+    "Completed Date ; Reference ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category",  # Pre Apr-2018
+    "Completed Date ; Reference ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category; Notes",  # Apr-2018
+]
 
 TRANSACTION_TYPES = {
    "To ": "XFER",
@@ -38,6 +40,12 @@ class RevolutCSVStatementParser(CsvStatementParser):
         else:
             return self.parse_value(value, 'payee'), ''
 
+    def parse_amount(self, value):
+        if not value or not value.strip():
+            return 0
+
+        return self.parse_float(value.strip().replace(',', ''))
+
     def parse_record(self, line):
         # Free Headerline
         if self.cur_record <= 1:
@@ -47,8 +55,8 @@ class RevolutCSVStatementParser(CsvStatementParser):
         stmt_line.date = self.parse_datetime(line[0].strip())
 
         # Amount
-        paid_out = -self.parse_float(line[2].strip() or '0')
-        paid_in = self.parse_float(line[3].strip() or '0')
+        paid_out = -self.parse_amount(line[2])
+        paid_in = self.parse_amount(line[3])
         stmt_line.amount = paid_out or paid_in
 
         reference = line[1].strip()
@@ -76,6 +84,14 @@ class RevolutCSVStatementParser(CsvStatementParser):
         else:
             stmt_line.memo = self.parse_value(reference, 'memo')
 
+        # Notes (from Apr-2018)
+        if len(line) > 8 and line[8].strip():
+            if not stmt_line.memo:
+                stmt_line.memo = u''
+            elif len(stmt_line.memo.strip()) > 0:
+                stmt_line.memo += u' '
+            stmt_line.memo += u'({})'.format(line[8].strip())
+
         return stmt_line
 
 
@@ -86,7 +102,7 @@ class RevolutPlugin(Plugin):
         f = open(fin, "r", encoding='utf-8')
         signature = f.readline().strip()
         f.seek(0)
-        if signature == SIGNATURE:
+        if signature in SIGNATURES:
             parser = RevolutCSVStatementParser(f)
             if 'account' in self.settings:
                 parser.statement.account_id = self.settings['account']
