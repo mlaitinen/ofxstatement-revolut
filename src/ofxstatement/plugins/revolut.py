@@ -7,6 +7,7 @@ from ofxstatement.statement import StatementLine, BankAccount
 SIGNATURES = [
     "Completed Date ; Reference ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category",  # Pre Apr-2018
     "Completed Date ; Reference ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category; Notes",  # Apr-2018
+    "Completed Date ; Description ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category; Notes",  # May-2018
 ]
 
 TRANSACTION_TYPES = {
