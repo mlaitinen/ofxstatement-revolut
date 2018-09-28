@@ -1,13 +1,14 @@
 import csv
+import re
 
 from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
 from ofxstatement.statement import StatementLine, BankAccount
 
 SIGNATURES = [
-    "Completed Date ; Reference ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category",  # Pre Apr-2018
-    "Completed Date ; Reference ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category; Notes",  # Apr-2018
-    "Completed Date ; Description ; Paid Out (EUR) ; Paid In (EUR) ; Exchange Out; Exchange In; Balance (EUR); Category; Notes",  # May-2018
+    "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category",  # Pre Apr-2018
+    "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # Apr-2018
+    "Completed Date ; Description ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # May-2018
 ]
 
 TRANSACTION_TYPES = {
@@ -102,13 +103,20 @@ class RevolutPlugin(Plugin):
     def get_parser(self, fin):
         f = open(fin, "r", encoding='utf-8')
         signature = f.readline().strip()
+        # Get currency ISO code and remove it from header line
+        ccy = re.sub(r'.*\(([A-Z]{3})\).*', r'\1', signature)
+        signature = re.sub(r'\([A-Z]{3}\)', '(...)', signature)
         f.seek(0)
         if signature in SIGNATURES:
             parser = RevolutCSVStatementParser(f)
             if 'account' in self.settings:
                 parser.statement.account_id = self.settings['account']
+            else:
+                parser.statement.account_id = 'Revolut - ' + ccy
             if 'currency' in self.settings:
                 parser.statement.currency = self.settings['currency']
+            else:
+                parser.statement.currency = ccy
             parser.statement.bank_id = self.settings.get('bank', 'Revolut')
             return parser
 
