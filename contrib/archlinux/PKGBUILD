@@ -1,0 +1,44 @@
+pkgname=ofxstatement-revolut-git
+_gitname=ofxstatement-revolut
+pkgver=release.0.0.1.r12.g950525a
+pkgrel=1
+pkgdesc='A plugin for ofxstatement to convert Revolut Ltd. (UK) statement history (CSV) to OFX.'
+arch=('any')
+url="https://github.com/mlaitinen/ofxstatement-revolut"
+license=('GPL3')
+depends=('python' 'ofxstatement')
+makedepends=('git')
+source=(git://github.com/mlaitinen/$_gitname.git)
+md5sums=('SKIP')
+
+pkgver() {
+  cd $_gitname
+  git clean -dfx > /dev/null 2>&1
+  git reset --hard > /dev/null 2>&1
+#  if you want a specific commit or branch... just put it here
+#  git checkout 441a3b44df770578240c1774b29d373aa4a08bb8 > /dev/null 2>&1
+  git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+
+build() {
+  # The Revolut app does not have an option to choose date format for export
+  # Instead, it seems to be based on mobile OS LANGUAGE settings
+  # The standard code uses English / US: May 18, 2018 = %b %d, %Y
+  # The other options are
+  #   English / UK: 18 May 2018 = %d %b %Y
+  #   Deutsch / DE: 18.05.2018
+  # The code must be patched since so far there is no user config option
+  DATE_FORMAT="%d %b %Y"
+  cd ${srcdir}/$_gitname
+  sed "s@date_format = \"%b %d, %Y\"@date_format = \"$DATE_FORMAT\"@" -i src/ofxstatement/plugins/revolut.py
+  echo
+}
+
+package() {
+  cd ${srcdir}/$_gitname
+  # build and package
+  python setup.py install --root=${pkgdir}/ --optimize=1
+}
+
+# vim:set ts=2 sw=2 et:
