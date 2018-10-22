@@ -83,7 +83,7 @@ class RevolutCSVStatementParser(CsvStatementParser):
                 break
 
         # The way YNAB works, it's easier to assume same currency in everything
-        if reference.startswith('Exchanged to '):
+        if reference.startswith('Exchanged '):
             return None
 
         if not trntype:
