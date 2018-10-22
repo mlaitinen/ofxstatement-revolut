@@ -1,6 +1,8 @@
 import csv
 import re
 
+from currency_converter import CurrencyConverter
+
 from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
 from ofxstatement.statement import StatementLine, BankAccount
@@ -23,6 +25,11 @@ TRANSACTION_TYPES = {
 class RevolutCSVStatementParser(CsvStatementParser):
 
     date_format = "%b %d, %Y"
+    ccnv = CurrencyConverter()
+
+    def __init__(self, f, ccy, *args, **kwargs):
+        super().__init__(self, f, *args, **kwargs)
+        self.ccy = ccy
 
     def split_records(self):
         return csv.reader(self.fin, delimiter=';', quotechar='"')
@@ -61,6 +68,10 @@ class RevolutCSVStatementParser(CsvStatementParser):
         paid_out = -self.parse_amount(line[2])
         paid_in = self.parse_amount(line[3])
         stmt_line.amount = paid_out or paid_in
+        try:
+            stmt_line.amount = self.ccnv(stmt_line.amount, self.ccy, 'EUR', date=stmt_line.date)
+        except Exception as e:
+            print('Something went wrong: %s' % e)
 
         reference = line[1].strip()
         trntype = False
@@ -68,6 +79,10 @@ class RevolutCSVStatementParser(CsvStatementParser):
             if reference.startswith(prefix):
                 trntype = transaction_type
                 break
+
+        # The way YNAB works, it's easier to assume same currency in everything
+        if reference.startswith('Exchanged to '):
+            return None
 
         if not trntype:
             trntype = 'POS'  # Default: Debit card payment
@@ -109,7 +124,7 @@ class RevolutPlugin(Plugin):
         signature = re.sub(r'\([A-Z]{3}\)', '(...)', signature)
         f.seek(0)
         if signature in SIGNATURES:
-            parser = RevolutCSVStatementParser(f)
+            parser = RevolutCSVStatementParser(f, ccy)
             if 'account' in self.settings:
                 parser.statement.account_id = self.settings['account']
             else:
