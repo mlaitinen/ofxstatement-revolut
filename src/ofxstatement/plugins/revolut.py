@@ -28,8 +28,8 @@ class RevolutCSVStatementParser(CsvStatementParser):
     date_format = "%b %d, %Y"
     ccnv = CurrencyConverter()
 
-    def __init__(self, f, ccy, *args, **kwargs):
-        super().__init__(self, f, *args, **kwargs)
+    def __init__(self, f, ccy):
+        super().__init__(f)
         self.ccy = ccy
 
     def split_records(self):
