@@ -25,7 +25,7 @@ TRANSACTION_TYPES = {
 
 class RevolutCSVStatementParser(CsvStatementParser):
 
-    date_format = "%b %d, %Y"
+    date_format = "%d %B %Y"
     ccnv = CurrencyConverter()
 
     def __init__(self, f, ccy):
