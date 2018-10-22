@@ -55,7 +55,7 @@ class RevolutCSVStatementParser(CsvStatementParser):
         if not value or not value.strip():
             return 0
 
-        return self.parse_float(value.strip().replace(',', ''))
+        return self.parse_float(value.strip().replace('.', '').replace(',', '.'))
 
     def parse_record(self, line):
         # Free Headerline
