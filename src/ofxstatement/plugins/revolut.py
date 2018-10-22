@@ -11,6 +11,7 @@ SIGNATURES = [
     "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category",  # Pre Apr-2018
     "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # Apr-2018
     "Completed Date ; Description ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # May-2018
+    "Completed Date;Reference;Paid Out (...);Paid In (...);Exchange Out;Exchange In; Balance (...);Category",  # Oct-2018
 ]
 
 TRANSACTION_TYPES = {
