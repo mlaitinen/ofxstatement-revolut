@@ -26,7 +26,7 @@ TRANSACTION_TYPES = {
 class RevolutCSVStatementParser(CsvStatementParser):
 
     date_format = "%d %B %Y"
-    ccnv = CurrencyConverter()
+    ccnv = CurrencyConverter(fallback_on_wrong_date=True)
 
     def __init__(self, f, ccy):
         super().__init__(f)
@@ -69,10 +69,11 @@ class RevolutCSVStatementParser(CsvStatementParser):
         paid_out = -self.parse_amount(line[2])
         paid_in = self.parse_amount(line[3])
         stmt_line.amount = paid_out or paid_in
-        try:
-            stmt_line.amount = self.ccnv.convert(stmt_line.amount, self.ccy, 'EUR', date=stmt_line.date)
-        except Exception as e:
-            print('Something went wrong: %s' % e)
+        if self.ccy != 'EUR':
+            try:
+                stmt_line.amount = self.ccnv.convert(stmt_line.amount, self.ccy, 'EUR', date=stmt_line.date)
+            except Exception as e:
+                print('Something went wrong: %s' % e)
 
         reference = line[1].strip()
         trntype = False
