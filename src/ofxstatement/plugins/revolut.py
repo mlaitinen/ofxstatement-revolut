@@ -70,7 +70,7 @@ class RevolutCSVStatementParser(CsvStatementParser):
         paid_in = self.parse_amount(line[3])
         stmt_line.amount = paid_out or paid_in
         try:
-            stmt_line.amount = self.ccnv(stmt_line.amount, self.ccy, 'EUR', date=stmt_line.date)
+            stmt_line.amount = self.ccnv.convert(stmt_line.amount, self.ccy, 'EUR', date=stmt_line.date)
         except Exception as e:
             print('Something went wrong: %s' % e)
 
