@@ -2,6 +2,7 @@
 -----
 
 - Date format is now configurable in the settings
+- "Payment from " is now also counted as a deposit
 
 1.2.0
 -----

@@ -16,6 +16,7 @@ TRANSACTION_TYPES = {
    "From ": "XFER",
    "Cash at ": "ATM",
    "Top-Up by": "DEP",
+   "Payment from": "DEP",
 }
 
 
