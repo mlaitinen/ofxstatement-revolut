@@ -1,5 +1,17 @@
-Changelog
-=========
+1.3.0
+-----
+
+- Date format is now configurable in the settings
+
+1.2.0
+-----
+
+- Support May 2018 CSV format
+
+1.1.0
+-----
+
+- Support April 2018 CSV format
 
 1.0.0
 -----

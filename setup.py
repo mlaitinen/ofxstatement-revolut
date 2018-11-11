@@ -6,7 +6,7 @@ import os
 from setuptools import find_packages
 from distutils.core import setup
 
-version = "1.2.0"
+version = "1.3.0"
 
 setup(name='ofxstatement-revolut',
       version=version,
@@ -14,7 +14,7 @@ setup(name='ofxstatement-revolut',
       author_email="miku@avoin.systems",
       url="https://github.com/mlaitinen/ofxstatement-revolut",
       description=("Bank statement parser for Revolut"),
-      long_description=open("README.md").read() + "\n" +
+      long_description=open("README.md").read() + "\n\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       license="GPLv3",
       keywords=["ofx", "ofxstatement", "banking", "statement", "revolut"],

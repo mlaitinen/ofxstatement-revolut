@@ -117,6 +117,8 @@ class RevolutPlugin(Plugin):
                 parser.statement.currency = self.settings['currency']
             else:
                 parser.statement.currency = ccy
+            if 'date_format' in self.settings:
+                parser.date_format = self.settings['date_format']
             parser.statement.bank_id = self.settings.get('bank', 'Revolut')
             return parser
 
