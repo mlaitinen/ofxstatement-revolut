@@ -9,7 +9,7 @@ from distutils.core import setup
 
 import unittest
 
-version = "1.3.0"
+version = "1.3.1"
 
 setup(name='ofxstatement-revolut',
       version=version,
@@ -19,6 +19,7 @@ setup(name='ofxstatement-revolut',
       description=("Bank statement parser for Revolut"),
       long_description=open("README.md").read() + "\n\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
+      long_description_content_type='text/markdown',
       license="GPLv3",
       keywords=["ofx", "ofxstatement", "banking", "statement", "revolut"],
       classifiers=[
