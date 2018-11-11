@@ -4,7 +4,10 @@
 """
 import os
 from setuptools import find_packages
+from setuptools.command.test import test as TestCommand
 from distutils.core import setup
+
+import unittest
 
 version = "1.3.0"
 
@@ -36,6 +39,7 @@ setup(name='ofxstatement-revolut',
           ]
       },
       install_requires=['ofxstatement'],
+      extras_require={'test': ["freezegun", "pytest"]},
       include_package_data=True,
       zip_safe=True
       )
