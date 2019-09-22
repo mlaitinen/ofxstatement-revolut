@@ -35,3 +35,19 @@ class RevolutTest(unittest.TestCase):
             ))
 
             self.assertTrue(filecmp.cmp(output.name, ofxname))
+
+    @freeze_time('2019-09-22 14:17:13')
+    def test_statement_september2019(self):
+
+        here = os.path.dirname(__file__)
+        csvname = os.path.join(here, 'samples', '2019-september.csv')
+        ofxname = os.path.join(here, 'samples', '2019-september.ofx')
+
+        with NamedTemporaryFile() as output:
+            convert(Namespace(
+                type='revolut',
+                input=csvname,
+                output=output.name,
+            ))
+
+            self.assertTrue(filecmp.cmp(output.name, ofxname))

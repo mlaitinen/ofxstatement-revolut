@@ -1,5 +1,6 @@
 import csv
 import re
+from datetime import datetime
 
 from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
@@ -9,6 +10,7 @@ SIGNATURES = [
     "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category",  # Pre Apr-2018
     "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # Apr-2018
     "Completed Date ; Description ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # May-2018
+    "Completed Date;Reference;Paid Out (...);Paid In (...);Exchange Out;Exchange In; Balance (...);Category",  # Sep-2019
 ]
 
 TRANSACTION_TYPES = {
@@ -23,6 +25,21 @@ TRANSACTION_TYPES = {
 class RevolutCSVStatementParser(CsvStatementParser):
 
     date_format = "%b %d, %Y"
+
+    def parse_datetime(self, value):
+        try:
+            parsed_datetime = datetime.strptime(value, "%B %d")
+            parsed_datetime = datetime(datetime.now().year, parsed_datetime.month, parsed_datetime.day)
+            return parsed_datetime
+        except ValueError:
+            pass
+
+        try:
+            return datetime.strptime(value, "%Y %B %d")
+        except ValueError:
+            pass
+
+        return super().parse_datetime(value)
 
     def split_records(self):
         return csv.reader(self.fin, delimiter=';', quotechar='"')
