@@ -9,7 +9,7 @@ from distutils.core import setup
 
 import unittest
 
-version = "1.3.1"
+version = "1.4.0"
 
 setup(name='ofxstatement-revolut',
       version=version,
