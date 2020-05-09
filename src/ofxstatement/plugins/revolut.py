@@ -6,12 +6,18 @@ from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
 from ofxstatement.statement import StatementLine, BankAccount
 
-SIGNATURES = [
-    "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category",  # Pre Apr-2018
-    "Completed Date ; Reference ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # Apr-2018
-    "Completed Date ; Description ; Paid Out (...) ; Paid In (...) ; Exchange Out; Exchange In; Balance (...); Category; Notes",  # May-2018
-    "Completed Date;Reference;Paid Out (...);Paid In (...);Exchange Out;Exchange In; Balance (...);Category",  # Sep-2019
-    "Completed Date;Reference;Paid Out (...);Paid In (...);Exchange Out;Exchange In; Balance (...);Exchange Rate;Category",  # Jan-2020
+KNOWN_COLUMNS = [
+    "Completed Date",
+    "Reference",
+    "Description",
+    "Paid Out (...)",
+    "Paid In (...)",
+    "Exchange Out",
+    "Exchange In",
+    "Balance (...)",
+    "Exchange Rate",
+    "Category",
+    "Notes",
 ]
 
 TRANSACTION_TYPES = {
@@ -24,6 +30,8 @@ TRANSACTION_TYPES = {
 
 
 class RevolutCSVStatementParser(CsvStatementParser):
+
+    __slots__ = 'columns'
 
     date_format = "%b %d, %Y"
 
@@ -72,15 +80,18 @@ class RevolutCSVStatementParser(CsvStatementParser):
         if self.cur_record <= 1:
             return None
 
+        c = self.columns
         stmt_line = StatementLine()
-        stmt_line.date = self.parse_datetime(line[0].strip())
+        stmt_line.date = self.parse_datetime(line[c["Completed Date"]].strip())
 
         # Amount
-        paid_out = -self.parse_amount(line[2])
-        paid_in = self.parse_amount(line[3])
+        paid_out = -self.parse_amount(line[c["Paid Out (...)"]])
+        paid_in = self.parse_amount(line[c["Paid In (...)"]])
         stmt_line.amount = paid_out or paid_in
 
-        reference = line[1].strip()
+        reference = line[c["Reference" if "Reference" in c.keys()
+                           else "Description"]].strip()
+
         trntype = False
         for prefix, transaction_type in TRANSACTION_TYPES.items():
             if reference.startswith(prefix):
@@ -105,13 +116,13 @@ class RevolutCSVStatementParser(CsvStatementParser):
         else:
             stmt_line.memo = self.parse_value(reference, 'memo')
 
-        # Notes (from Apr-2018)
-        if len(line) > 8 and line[8].strip():
+        # Notes
+        if "Notes" in c.keys():
             if not stmt_line.memo:
                 stmt_line.memo = u''
             elif len(stmt_line.memo.strip()) > 0:
                 stmt_line.memo += u' '
-            stmt_line.memo += u'({})'.format(line[8].strip())
+            stmt_line.memo += u'({})'.format(line[c["Notes"]].strip())
 
         return stmt_line
 
@@ -121,13 +132,22 @@ class RevolutPlugin(Plugin):
 
     def get_parser(self, fin):
         f = open(fin, "r", encoding='utf-8')
-        signature = f.readline().strip()
+        signature = f.readline()
+
         # Get currency ISO code and remove it from header line
-        ccy = re.sub(r'.*\(([A-Z]{3})\).*', r'\1', signature)
+        ccy = re.sub(r'.*\(([A-Z]{3})\).*', r'\1', signature)[:3]
         signature = re.sub(r'\([A-Z]{3}\)', '(...)', signature)
-        f.seek(0)
-        if signature in SIGNATURES:
+
+        columns = [col.strip() for col in signature.split(';')]
+
+        if "Completed Date" in columns \
+            and "Paid Out (...)" in columns \
+            and "Paid In (...)" in columns \
+                and ("Reference" in columns or "Description" in columns):
+
+            f.seek(0)
             parser = RevolutCSVStatementParser(f)
+            parser.columns = {col: columns.index(col) for col in columns}
             if 'account' in self.settings:
                 parser.statement.account_id = self.settings['account']
             else:
