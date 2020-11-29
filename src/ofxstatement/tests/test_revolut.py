@@ -11,14 +11,14 @@ from argparse import Namespace
 
 class RevolutTest(unittest.TestCase):
 
-    def load_configuration(self):
-        here = os.path.dirname(__file__)
-        cfname = os.path.join(here, 'samples', 'config.ini')
-        return configuration.read(cfname)
+    @classmethod
+    def setUpClass(cls):
+        def get_default_location_mock():
+            current_path = os.path.dirname(os.path.realpath(__file__))
+            return os.path.join(current_path, 'samples', 'config.ini')
 
-    def test_configuration(self):
-        config = self.load_configuration()
-        self.assertEqual(config['revolut']['date_format'], '%Y-%m-%d')
+        # Use the config.ini found under samples/
+        configuration.get_default_location = get_default_location_mock
 
     @freeze_time('2018-11-11 14:17:13')
     def test_statement_april2018(self):

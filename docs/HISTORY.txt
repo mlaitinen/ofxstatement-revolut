@@ -1,3 +1,9 @@
+1.6.0
+-----
+
+- Since version 0.6.5 ofxstatement requires a statement line to have either id, refnum or check_no. To avoid failing
+  the conversion, there's now a unique MD5 hashed ID computed from the date, payee, amount and balance.
+
 1.5.0
 -----
 

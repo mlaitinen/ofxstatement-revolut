@@ -1,6 +1,7 @@
 import csv
 import re
 from datetime import datetime
+from hashlib import md5
 
 from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
@@ -123,6 +124,11 @@ class RevolutCSVStatementParser(CsvStatementParser):
             elif len(stmt_line.memo.strip()) > 0:
                 stmt_line.memo += u' '
             stmt_line.memo += u'({})'.format(line[c["Notes"]].strip())
+
+        # Generate a unique ID
+        balance = self.parse_amount(line[c["Balance (...)"]])
+        stmt_line.id = md5(f"{stmt_line.date}-{stmt_line.payee}-{stmt_line.amount}-{balance}".encode())\
+            .hexdigest()
 
         return stmt_line
 
