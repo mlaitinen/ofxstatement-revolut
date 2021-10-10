@@ -1,3 +1,10 @@
+2.0.0
+-----
+
+- Complete backwards-incompatible refactoring, support the new CSV format
+- Requires ofxstatement >= 0.7.2
+- Any transactions with a fee will generate an additional fee transaction where the payee is "Revolut"
+
 1.6.0
 -----
 

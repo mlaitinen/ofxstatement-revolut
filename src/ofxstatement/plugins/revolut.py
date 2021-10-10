@@ -1,32 +1,17 @@
-import csv
-import re
-from datetime import datetime
 from hashlib import md5
+from typing import Optional, Any, List
 
 from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
-from ofxstatement.statement import StatementLine, BankAccount
-
-KNOWN_COLUMNS = [
-    "Completed Date",
-    "Reference",
-    "Description",
-    "Paid Out (...)",
-    "Paid In (...)",
-    "Exchange Out",
-    "Exchange In",
-    "Balance (...)",
-    "Exchange Rate",
-    "Category",
-    "Notes",
-]
+from ofxstatement.statement import StatementLine, Currency, Statement
 
 TRANSACTION_TYPES = {
-   "To ": "XFER",
-   "From ": "XFER",
-   "Cash at ": "ATM",
-   "Top-Up by": "DEP",
-   "Payment from": "DEP",
+    "TRANSFER": "XFER",
+    "CARD_PAYMENT": "POS",
+    "CARD_REFUND": "POS",
+    "TOPUP": "DEP",
+    "EXCHANGE": "OTHER",
+    # "???": "ATM",  # TODO: What's Revolut's type for ATM transactions?
 }
 
 
@@ -34,134 +19,98 @@ class RevolutCSVStatementParser(CsvStatementParser):
 
     __slots__ = 'columns'
 
-    date_format = "%b %d, %Y"
+    date_format = "%Y-%m-%d %H:%M:%S"
 
-    def parse_datetime(self, value):
-        try:
-            parsed_datetime = datetime.strptime(value, "%B %d")
-            parsed_datetime = datetime(datetime.now().year, parsed_datetime.month, parsed_datetime.day)
-            return parsed_datetime
-        except ValueError:
-            pass
+    mappings = {
+        "trntype": 0,
+        "date": 3,
+        "payee": 4,
+        "amount": 5,
+        "fee": 6,
+        "currency": 7,
+    }
 
-        try:
-            return datetime.strptime(value, "%Y %B %d")
-        except ValueError:
-            pass
+    def parse_currency(self, value: Optional[str], field: str) -> Currency:
+        return Currency(symbol=value)
 
-        return super().parse_datetime(value)
-
-    def split_records(self):
-        return csv.reader(self.fin, delimiter=';', quotechar='"')
-
-    def parse_value(self, value, field):
+    def parse_value(self, value: Optional[str], field: str) -> Any:
         value = value.strip() if value else value
-        if field == "bank_account_to":
-            return BankAccount("", value)
+        if field == "trntype":
+            # Default: Debit card payment
+            return TRANSACTION_TYPES.get(value, "POS")
+        elif field == "currency":
+            return self.parse_currency(value, field)
         else:
             return super().parse_value(value, field)
 
-    def parse_payee_memo(self, value):
-        if 'FX Rate' in value:
-            limit = value.find('FX Rate')
-            payee = self.parse_value(value[0:limit], 'payee')
-            memo = self.parse_value(value[limit:], 'memo')
-            return payee, memo
-        else:
-            return self.parse_value(value, 'payee'), ''
-
-    def parse_amount(self, value):
-        if not value or not value.strip():
-            return 0
-
-        return self.parse_float(value.strip().replace(',', ''))
-
-    def parse_record(self, line):
-        # Free Headerline
+    def parse_record(self, line: List[str]) -> Optional[StatementLine]:
+        # Ignore the header
         if self.cur_record <= 1:
             return None
 
         c = self.columns
-        stmt_line = StatementLine()
-        stmt_line.date = self.parse_datetime(line[c["Completed Date"]].strip())
-
-        # Amount
-        paid_out = -self.parse_amount(line[c["Paid Out (...)"]])
-        paid_in = self.parse_amount(line[c["Paid In (...)"]])
-        stmt_line.amount = paid_out or paid_in
-
-        reference = line[c["Reference" if "Reference" in c.keys()
-                           else "Description"]].strip()
-
-        trntype = False
-        for prefix, transaction_type in TRANSACTION_TYPES.items():
-            if reference.startswith(prefix):
-                trntype = transaction_type
-                break
-
-        if not trntype:
-            trntype = 'POS'  # Default: Debit card payment
-
-        # It's ... pretty ugly, but I see no other way to do this than parse
-        # the reference string because that's all the data we have.
-        stmt_line.trntype = trntype
-        if trntype == 'POS':
-            stmt_line.payee, stmt_line.memo = self.parse_payee_memo(reference)
-        elif reference.startswith('Cash at '):
-            stmt_line.payee, stmt_line.memo = self.parse_payee_memo(
-                reference[8:])
-        elif reference.startswith('To ') or reference.startswith('From '):
-            stmt_line.payee = self.parse_value(
-                reference[reference.find(' '):], 'payee'
-            )
-        else:
-            stmt_line.memo = self.parse_value(reference, 'memo')
-
-        # Notes
-        if "Notes" in c.keys():
-            if not stmt_line.memo:
-                stmt_line.memo = u''
-            elif len(stmt_line.memo.strip()) > 0:
-                stmt_line.memo += u' '
-            stmt_line.memo += u'({})'.format(line[c["Notes"]].strip())
+        stmt_line = super().parse_record(line)
 
         # Generate a unique ID
-        balance = self.parse_amount(line[c["Balance (...)"]])
+        balance = self.parse_float(line[c["Balance"]])
         stmt_line.id = md5(f"{stmt_line.date}-{stmt_line.payee}-{stmt_line.amount}-{balance}".encode())\
             .hexdigest()
 
         return stmt_line
 
+    # noinspection PyUnresolvedReferences
+    def parse(self) -> Statement:
+        statement = super().parse()
+
+        # Generate fee transactions, if any fees exist
+        for stmt_line in statement.lines:
+            if not hasattr(stmt_line, "fee"):
+                continue
+
+            fee = self.parse_decimal(stmt_line.fee)
+            if fee:
+                fee_line = StatementLine()
+                fee_line.amount = -fee
+                fee_line.currency = stmt_line.currency
+                fee_line.date = stmt_line.date
+                fee_line.id = f"{stmt_line.id}-feex"
+                fee_line.payee = "Revolut"
+                fee_line.trntype = "FEE"
+                fee_line.memo = f"Revolut fee for {stmt_line.payee}, {stmt_line.currency.symbol} {stmt_line.amount}"
+
+                statement.lines.append(fee_line)
+
+        return statement
+
 
 class RevolutPlugin(Plugin):
     """Revolut"""
 
-    def get_parser(self, fin):
-        f = open(fin, "r", encoding='utf-8')
+    def get_parser(self, filename: str) -> RevolutCSVStatementParser:
+        f = open(filename, "r", encoding='utf-8')
         signature = f.readline()
 
-        # Get currency ISO code and remove it from header line
-        ccy = re.sub(r'.*\(([A-Z]{3})\).*', r'\1', signature)[:3]
-        signature = re.sub(r'\([A-Z]{3}\)', '(...)', signature)
+        csv_columns = [col.strip() for col in signature.split(",")]
+        required_columns = [
+            "Type",
+            "Completed Date",
+            "Description",
+            "Amount",
+            "Currency",
+            "Balance"
+        ]
 
-        columns = [col.strip() for col in signature.split(';')]
-
-        if "Completed Date" in columns \
-            and "Paid Out (...)" in columns \
-            and "Paid In (...)" in columns \
-                and ("Reference" in columns or "Description" in columns):
+        if set(required_columns).issubset(csv_columns):
 
             f.seek(0)
             parser = RevolutCSVStatementParser(f)
-            parser.columns = {col: columns.index(col) for col in columns}
+            parser.columns = {col: csv_columns.index(col) for col in csv_columns}
             if 'account' in self.settings:
                 parser.statement.account_id = self.settings['account']
             else:
-                parser.statement.account_id = 'Revolut - ' + ccy
+                parser.statement.account_id = 'Revolut'
             if 'currency' in self.settings:
                 parser.statement.currency = self.settings['currency']
-            else:
-                parser.statement.currency = ccy
             if 'date_format' in self.settings:
                 parser.date_format = self.settings['date_format']
             parser.statement.bank_id = self.settings.get('bank', 'Revolut')

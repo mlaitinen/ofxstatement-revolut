@@ -9,4 +9,4 @@ install:
   - pip install -e .[test]
 
 script:
-  - pytest src/ofxstatement
+  - pytest tests

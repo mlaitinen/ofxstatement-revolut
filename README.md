@@ -2,16 +2,10 @@
 
 [![Build Status](https://travis-ci.com/mlaitinen/ofxstatement-revolut.svg?branch=master)](https://travis-ci.com/mlaitinen/ofxstatement-revolut)
 
-This is a plugin for use with [ofxstatement](https://github.com/kedder/ofxstatement) package. It implements
+This is a plugin for [ofxstatement](https://github.com/kedder/ofxstatement). It implements
 a parser for the Revolut CSV-formatted bank statement.
 
-The CSV isn't very machine readable, so we need to do some ugly string
-parsing to figure out the different field values.
-
-Issue reports and pull requests welcome.
-
-This module is based on the Osuuspankki ofxstatement parser found at
-https://github.com/koodaamo/banking.statements.osuuspankki
+Issue reports and pull requests are welcome.
 
 ## Installation
 
