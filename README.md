@@ -1,6 +1,7 @@
 # ofxstatement-revolut
 
-[![Build Status](https://travis-ci.com/mlaitinen/ofxstatement-revolut.svg?branch=master)](https://travis-ci.com/mlaitinen/ofxstatement-revolut)
+![badge](https://github.com/mlaitinen/ofxstatement-revolut/actions/workflows/python-app.yml/badge.svg)
+
 
 This is a plugin for [ofxstatement](https://github.com/kedder/ofxstatement). It implements
 a parser for the Revolut CSV-formatted bank statement.
