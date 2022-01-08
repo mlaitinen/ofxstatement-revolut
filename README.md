@@ -1,6 +1,6 @@
 # ofxstatement-revolut
 
-![badge](https://github.com/mlaitinen/ofxstatement-revolut/actions/workflows/python-app.yml/badge.svg)
+![badge](https://github.com/mlaitinen/ofxstatement-revolut/actions/workflows/build-and-publish.yml/badge.svg)
 
 
 This is a plugin for [ofxstatement](https://github.com/kedder/ofxstatement). It implements
