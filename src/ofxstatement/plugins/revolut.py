@@ -23,6 +23,7 @@ class RevolutCSVStatementParser(CsvStatementParser):
 
     mappings = {
         "trntype": 0,
+        "date_user": 2,
         "date": 3,
         "payee": 4,
         "amount": 5,
@@ -49,6 +50,11 @@ class RevolutCSVStatementParser(CsvStatementParser):
             return None
 
         c = self.columns
+
+        # Ignore pending charges
+        if line[c["State"]] != "COMPLETED":
+            return None
+
         stmt_line = super().parse_record(line)
 
         # Generate a unique ID
@@ -93,6 +99,7 @@ class RevolutPlugin(Plugin):
         csv_columns = [col.strip() for col in signature.split(",")]
         required_columns = [
             "Type",
+            "Started Date",
             "Completed Date",
             "Description",
             "Amount",

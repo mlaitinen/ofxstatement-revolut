@@ -1,3 +1,9 @@
+2.0.2
+-----
+- Ignore other than COMPLETED transactions. Pending transactions have their own structure in OFX
+  called STMTTRNP, but ofxstatement doesn't support it.
+- Include the "Started Date" as the date the user initiated the transaction.
+
 2.0.1
 -----
 - Version 2.0.0 republished due to some issues with PyPI
