@@ -10,7 +10,7 @@ TRANSACTION_TYPES = {
     "CARD_PAYMENT": "POS",
     "CARD_REFUND": "POS",
     "TOPUP": "DEP",
-    "EXCHANGE": "OTHER",
+    "EXCHANGE": "XFER",
     "ATM": "ATM",
 }
 
