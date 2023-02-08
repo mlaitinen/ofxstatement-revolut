@@ -11,7 +11,7 @@ TRANSACTION_TYPES = {
     "CARD_REFUND": "POS",
     "TOPUP": "DEP",
     "EXCHANGE": "OTHER",
-    # "???": "ATM",  # TODO: What's Revolut's type for ATM transactions?
+    "ATM": "ATM",
 }
 
 
