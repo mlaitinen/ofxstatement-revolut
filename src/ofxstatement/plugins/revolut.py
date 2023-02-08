@@ -12,6 +12,7 @@ TRANSACTION_TYPES = {
     "TOPUP": "DEP",
     "EXCHANGE": "XFER",
     "ATM": "ATM",
+    "FEE": "FEE",
 }
 
 
