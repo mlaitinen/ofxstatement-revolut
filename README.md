@@ -23,8 +23,8 @@ python3 setup.py install
 
 ## Configuration options
 
-| Option        | Description                                                                                                                                    |
-|---------------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| `account`     | Define the account of this bank statement                                                                                                      |
-| `currency`    | The base currency of the account                                                                                                               |
-| `date_format` | The date format in the bank statement. Note that you have to use double `%`-marks in the settings file like this: `date_format = %%b %%d, %%Y` |
+| Option        | Description                                                                                                                                               |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `account`     | Define the account of this bank statement                                                                                                                 |
+| `currency`    | The base currency of the account                                                                                                                          |
+| `date_format` | The date format in the bank statement. Note that you have to use double `%`-marks in the settings file like this: `date_format = %%Y-%%m-%%d %%H:%%M:%%S` |
