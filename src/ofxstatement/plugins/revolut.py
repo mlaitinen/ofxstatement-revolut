@@ -58,7 +58,8 @@ class RevolutCSVStatementParser(CsvStatementParser):
         stmt_line = super().parse_record(line)
 
         # Generate a unique ID
-        balance = self.parse_float(line[c["Balance"]])
+        balance_content = line[c["Balance"]]
+        balance = self.parse_float(balance_content) if balance_content else 0
         stmt_line.id = md5(f"{stmt_line.date}-{stmt_line.payee}-{stmt_line.amount}-{balance}".encode())\
             .hexdigest()
 
