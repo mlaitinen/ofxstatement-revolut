@@ -3,12 +3,13 @@ from typing import Optional, Any, List
 
 from ofxstatement.plugin import Plugin
 from ofxstatement.parser import CsvStatementParser
-from ofxstatement.statement import StatementLine, Currency, Statement
+from ofxstatement.statement import StatementLine, Currency, Statement, InvestStatementLine
 
 TRANSACTION_TYPES = {
     "TRANSFER": "XFER",
     "CARD_PAYMENT": "POS",
     "CARD_REFUND": "POS",
+    "FEE": "FEE",
     "TOPUP": "DEP",
     "EXCHANGE": "OTHER",
     # "???": "ATM",  # TODO: What's Revolut's type for ATM transactions?
@@ -27,7 +28,7 @@ class RevolutCSVStatementParser(CsvStatementParser):
         "date": 3,
         "payee": 4,
         "amount": 5,
-        "fee": 6,
+        "fees": 6,
         "currency": 7,
     }
 
@@ -37,6 +38,9 @@ class RevolutCSVStatementParser(CsvStatementParser):
     def parse_value(self, value: Optional[str], field: str) -> Any:
         value = value.strip() if value else value
         if field == "trntype":
+            if value == "TRADE":
+                return None
+
             # Default: Debit card payment
             return TRANSACTION_TYPES.get(value, "POS")
         elif field == "currency":
@@ -44,7 +48,14 @@ class RevolutCSVStatementParser(CsvStatementParser):
         else:
             return super().parse_value(value, field)
 
-    def parse_record(self, line: List[str]) -> Optional[StatementLine]:
+    def is_investment_line(self, line: List[str]) -> bool:
+        line_type = line[self.columns["Type"]]
+        if line_type == "TRADE":
+            column = self.columns.get("Product")
+            return line[column] == "Investments" if column else False
+        return False
+
+    def parse_record_internal(self, line: List[str]) -> Optional[StatementLine]:
         # Ignore the header
         if self.cur_record <= 1:
             return None
@@ -58,22 +69,66 @@ class RevolutCSVStatementParser(CsvStatementParser):
         stmt_line = super().parse_record(line)
 
         # Generate a unique ID
-        balance = self.parse_float(line[c["Balance"]])
+        balance_content = line[c["Balance"]]
+        balance = self.parse_float(balance_content) if balance_content else 0
         stmt_line.id = md5(f"{stmt_line.date}-{stmt_line.payee}-{stmt_line.amount}-{balance}".encode())\
             .hexdigest()
 
         return stmt_line
 
+    def parse_record(self, line: List[str]) -> Optional[StatementLine|InvestStatementLine]:
+        stmt_line = self.parse_record_internal(line)
+
+        if not self.is_investment_line(line):
+            return stmt_line
+
+        invest_line = InvestStatementLine(id=stmt_line.id,
+            date=stmt_line.date, memo=stmt_line.payee,
+            amount=stmt_line.amount, security_id=stmt_line.id)
+
+        if invest_line.memo == "Dividends" or invest_line.memo == "Dividend taxes":
+            invest_line.trntype = "INCOME"
+            invest_line.trntype_detailed = "DIV"
+        elif invest_line.memo == "Investing money" or invest_line.amount < 0:
+            invest_line.trntype = 'BUYSTOCK'
+            invest_line.trntype_detailed = 'BUY'
+            invest_line.units = 1
+            invest_line.unit_price = abs(stmt_line.amount)
+        elif invest_line.memo == "Merger and acquisition" and invest_line.amount > 0:
+            invest_line.trntype = 'SELLSTOCK'
+            invest_line.trntype_detailed = 'SELL'
+            invest_line.units = 1
+            invest_line.unit_price = stmt_line.amount
+        else:
+            stmt_line.trntype = "INT"
+            return stmt_line
+
+        return invest_line
+
     # noinspection PyUnresolvedReferences
     def parse(self) -> Statement:
-        statement = super().parse()
+        reader = self.split_records()
 
-        # Generate fee transactions, if any fees exist
-        for stmt_line in statement.lines:
-            if not hasattr(stmt_line, "fee"):
+        for line in reader:
+            self.cur_record += 1
+            if not line:
                 continue
 
-            fee = self.parse_decimal(stmt_line.fee)
+            parsed = self.parse_record(line)
+            if parsed:
+                parsed.assert_valid()
+
+                if isinstance(parsed, StatementLine):
+                    self.statement.lines.append(parsed)
+                elif isinstance(parsed, InvestStatementLine):
+                    self.statement.invest_lines.append(parsed)
+
+        # Generate fee transactions, if any fees exist
+        for stmt_line in self.statement.lines:
+            if not hasattr(stmt_line, "fees"):
+                continue
+
+            fee = self.parse_decimal(stmt_line.fees)
             if fee:
                 fee_line = StatementLine()
                 fee_line.amount = -fee
@@ -84,9 +139,9 @@ class RevolutCSVStatementParser(CsvStatementParser):
                 fee_line.trntype = "FEE"
                 fee_line.memo = f"Revolut fee for {stmt_line.payee}, {stmt_line.currency.symbol} {stmt_line.amount}"
 
-                statement.lines.append(fee_line)
+                self.statement.lines.append(fee_line)
 
-        return statement
+        return self.statement
 
 
 class RevolutPlugin(Plugin):
