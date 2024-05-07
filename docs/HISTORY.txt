@@ -1,3 +1,8 @@
+2.0.3
+-----
+- Use ATM types for ATM events, XFER type for EXCHANGE operations, and add FEE type (thanks @3v1n0)
+- Handle empty balance fields (thanks @3v1n0)
+
 2.0.2
 -----
 - Ignore other than COMPLETED transactions. Pending transactions have their own structure in OFX
